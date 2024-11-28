@@ -10,9 +10,45 @@ class MyWidget extends StatefulWidget {
   State<MyWidget> createState() => _MyWidgetState();
 }
 
+class NotificationData {
+  final String name;
+  final int tipo;
+  final String aviso;
+  final Color color;
+
+  NotificationData({
+    required this.name,
+    required this.tipo,
+    required this.aviso,
+    required this.color,
+  });
+}
+
 class _MyWidgetState extends State<MyWidget> {
+  Map<String, dynamic>? latestMessage = {
+    'lightIntensity': 50,
+    'temperatura': 24,
+    'umidade': 30,
+  }; // Armazena a última mensagem recebida
+
   String currentTime = '';
   String dayOfWeek = '';
+  List<NotificationData> listNotification = [];
+  void _simulatePayload() {
+    Timer.periodic(Duration(seconds: 5), (timer) {
+      final fakeNotification = NotificationData(
+        name: 'Sensor UV',
+        tipo: 1,
+        aviso: 'Alerta de radiação alta!',
+        color: Colors.red,
+      );
+
+      setState(() {
+        listNotification.add(fakeNotification);
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -20,6 +56,7 @@ class _MyWidgetState extends State<MyWidget> {
     Timer.periodic(Duration(seconds: 1), (timer) {
       _updateTime(); // Atualiza a hora a cada 1 segundo
     });
+    _simulatePayload();
   } // Função para atualizar a hora e o dia da semana
 
   void _updateTime() {
@@ -55,22 +92,23 @@ class _MyWidgetState extends State<MyWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Sensor UV',
-          style: TextStyle(
-            color: Colors.white,
+        appBar: AppBar(
+          title: const Text(
+            'Sensor UV',
+            style: TextStyle(
+              color: Colors.white,
+            ),
           ),
-        ),
-        backgroundColor: const Color.fromARGB(255, 51, 51, 56),
+          backgroundColor: const Color.fromARGB(255, 51, 51, 56),
 
-        leading: const Icon(
-          Icons.cloud,
-          color: Colors.white,
-        ), // Ícone no início do AppBar
-      ),
-      body: Consumer<MQTTService>(builder: (context, mqttService, child) {
-        return SingleChildScrollView(
+          leading: const Icon(
+            Icons.cloud,
+            color: Colors.white,
+          ), // Ícone no início do AppBar
+        ),
+        body: SafeArea(
+          // child: Consumer<MQTTService>(builder: (context, mqttService, child) {
+          //   return SingleChildScrollView(
           child: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -140,8 +178,9 @@ class _MyWidgetState extends State<MyWidget> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    mqttService.latestMessage?["temperatura"]
-                                            .toString() ??
+                                    //  mqttService.
+
+                                    latestMessage?["temperatura"].toString() ??
                                         '000',
                                     style: const TextStyle(
                                         fontSize: 50,
@@ -188,8 +227,8 @@ class _MyWidgetState extends State<MyWidget> {
                                 height: 5,
                               ),
                               Text(
-                                  mqttService.latestMessage?["lightIntensity"]
-                                          .toString() ??
+                                  // mqttService.
+                                  latestMessage?["lightIntensity"].toString() ??
                                       '000',
                                   style: const TextStyle(color: Colors.white)),
                               Text(
@@ -211,9 +250,8 @@ class _MyWidgetState extends State<MyWidget> {
                                 height: 5,
                               ),
                               Text(
-                                  mqttService.latestMessage?["umidade"]
-                                          .toString() ??
-                                      '000',
+                                  // mqttService.
+                                  latestMessage?["umidade"].toString() ?? '000',
                                   style: const TextStyle(color: Colors.white)),
                               Text(
                                 "Umidade",
@@ -251,85 +289,72 @@ class _MyWidgetState extends State<MyWidget> {
                   ),
                 ),
                 Container(
-                  height: MediaQuery.of(context).size.height,
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.all(10),
-                  // child: SingleChildScrollView(
-                  //   child: Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       Container(
-                  //         margin: const EdgeInsets.all(15),
-                  //         child: const Text(
-                  //           "Informações",
-                  //           style: TextStyle(
-                  //               color: Colors.white,
-                  //               fontSize: 25,
-                  //               fontWeight: FontWeight.bold),
-                  //         ),
-                  //       ),
-                  //       Container(
-                  //         padding: const EdgeInsets.symmetric(
-                  //             horizontal: 5, vertical: 5),
-                  //         decoration: BoxDecoration(
-                  //           color: Colors.grey[700],
-                  //           borderRadius: BorderRadius.circular(
-                  //               20), // Borda arredondada para o Container principal
-                  //         ),
-                  //         child: ListTile(
-                  //           trailing: Container(
-                  //             padding: const EdgeInsets.all(10),
-                  //             decoration: BoxDecoration(
-                  //               color: Colors.grey[800],
-                  //               borderRadius: BorderRadius.circular(
-                  //                   15), // Borda arredondada para o leading
-                  //             ),
-                  //             child: const Text(
-                  //               "23230",
-                  //               style: TextStyle(
-                  //                   color: Colors.white, fontSize: 18),
-                  //             ),
-                  //           ),
-                  //           subtitle: const Text("Sensor UV"),
-                  //           title: const Text(
-                  //             "Alerta de radiação UV",
-                  //             style:
-                  //                 TextStyle(color: Colors.white, fontSize: 18),
-                  //           ),
-                  //           leading: Container(
-                  //             width: 50, // Define largura para o ícone
-                  //             height: 50, // Define altura para o ícone
-                  //             decoration: BoxDecoration(
-                  //               gradient: const LinearGradient(
-                  //                 colors: [
-                  //                   Color.fromARGB(
-                  //                       255, 119, 182, 253), // Azul escuro
-                  //                   Color.fromARGB(
-                  //                       255, 0, 157, 255), // Azul claro
-                  //                 ],
-                  //                 begin: Alignment.topCenter,
-                  //                 end: Alignment.bottomCenter,
-                  //               ),
-                  //               borderRadius: BorderRadius.circular(
-                  //                   15), // Borda arredondada para o leading
-                  //             ),
-                  //             child: const Icon(
-                  //               Icons.warning_amber_rounded,
-                  //               size: 35,
-                  //               color: Colors.white,
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       )
-                  //     ],
-                  //   ),
-                  // ),
+                  margin: const EdgeInsets.all(15),
+                  child: const Text(
+                    "Informações",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: listNotification.length,
+                    itemBuilder: (context, index) {
+                      final notification = listNotification[index];
+
+                      return ListTile(
+                        trailing: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(
+                                15), // Borda arredondada para o leading
+                          ),
+                          child: const Text(
+                            "23230",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                        ),
+                        subtitle: const Text("Sensor UV"),
+                        title: const Text(
+                          "Alerta de radiação UV",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                        leading: Container(
+                          width: 50, // Define largura para o ícone
+                          height: 50, // Define altura para o ícone
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color.fromARGB(
+                                    255, 119, 182, 253), // Azul escuro
+                                Color.fromARGB(255, 0, 157, 255), // Azul claro
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                                15), // Borda arredondada para o leading
+                          ),
+                          child: const Icon(
+                            Icons.warning_amber_rounded,
+                            size: 35,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 )
               ],
             ),
           ),
+        )
+        //;
+        //}),
+        //),
         );
-      }),
-    );
   }
 }

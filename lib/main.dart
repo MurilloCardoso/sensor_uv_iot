@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
     return ChangeNotifierProvider.value(
       value: mqttService,
       child: MaterialApp(
-        home: isConnected ? const MyWidget() : DisconnectedScreen(),
+        home: isConnected ? const MyWidget() : const MyWidget(),
         debugShowCheckedModeBanner: false,
       ),
     );
